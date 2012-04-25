@@ -1,24 +1,23 @@
 (ns dojo.core)
 
-(defn simulate-throw
- ([] (rand-int 11))
- ([n] (rand-int n)))
-
-(defn score-game [frames]
-  (reduce + (map score-frame 
-                 (partition 2 frames))))
-
-(defn score-frame [[first-frame second-frame]]
-  (reduce + first-frame))
+(defn score-game [[frame & rest-of-game :as game]]
+  (if (= frame nil) 0
+  (if (= (apply + frame) 10) 
+    (reduce + [(apply + (take 3 (flatten game))) (score-game rest-of-game)])
+    (reduce + [(apply + frame) (score-game rest-of-game)]))))
 
 (deftest basic
- (let [frames [[5 2] [3 3]]]
-         (is (= 13 (score-game frames)))))
+         (let [frames [[5 2] [3 3]]]
+           (is (= 13 (score-game frames)))))
 
 (deftest strike-followed-two-simple
- (let [frames [[10 0] [3 3] [1 0]]]
-         (is (= 23 (score-game frames)))))
+         (let [frames [[10] [3 3] [1 0]]]
+           (is (= 23 (score-game frames)))))
 
 (deftest strike-followed-three-simple
- (let [frames [[10 0] [3 3] [1 0] [1 0]]]
-         (is (= 24 (score-game frames)))))
+         (let [frames [[10] [3 3] [1 0] [1 0]]]
+           (is (= 24 (score-game frames)))))
+
+(deftest spare-followed-three-simple
+         (let [frames [[3 7] [3 3] [1 0] [1 0]]]
+           (is (= 21 (score-game frames)))))
